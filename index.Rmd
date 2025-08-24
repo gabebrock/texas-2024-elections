@@ -8,6 +8,9 @@ output: html_document
 library(tidyverse)
 library(readxl)
 
+options(digits=2)
+options(scipen = 999)
+
 ```
 
 # County by County Canvass Report
@@ -41,15 +44,35 @@ prez2024 <- prez2024 %>%
   mutate(TOTAL_VOTES = as.numeric(gsub(",", "", TOTAL_VOTES)))
 
 # pivot county totals wider
-pivot_prez <- prez2024 %>%
+prez2024wider <- prez2024 %>%
   pivot_wider(
     id_cols = COUNTY,
     names_from = CANDIDATE,
     values_from = TOTAL_VOTES,
     values_fill = list(TOTAL_VOTES = 0)
     ) %>%
-  mutate(TOTAL = rowSums(across(-COUNTY))) # total by county votes
+  mutate(TotalVOTES = rowSums(across(-COUNTY))) %>% # total by county votes
+  mutate(VoteSHARE = round((TotalVOTES / sum(TotalVOTES)), 3))
 
 
 ```
+
+```{r}
+
+top15counties <- prez2024wider %>%
+  arrange(desc(TotalVOTES)) %>%
+  select(COUNTY, TotalVOTES, VoteSHARE) %>%
+  slice_max(VoteSHARE, n = 10) %>%
+  sum(VoteSHARE)
+
+```
+
+```{r texas gis data}
+
+sf <- shapefile(filename = "data/gis/counties/Texas_County_Boundaries_4845315375211121464")
+
+
+```
+
+
 
