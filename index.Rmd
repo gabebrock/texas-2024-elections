@@ -1,0 +1,55 @@
+---
+title: "index"
+output: html_document
+---
+
+```{r load libraries}
+
+library(tidyverse)
+library(readxl)
+
+```
+
+# County by County Canvass Report
+
+Texas Secretary of State publishes county by county election results at [results.texas-election.com](https://results.texas-election.com/races).
+
+
+```{r load Texas Election Results 2024}
+
+df <- read_excel("data/CountybyCountyCanvassReport.xlsx")
+
+prez2024 <- df %>%
+  select(-`ELECTION DATE-NAME`) %>%
+  filter(`OFFICE NAME` == "PRESIDENT/VICE-PRESIDENT")
+
+```
+
+
+```{r president results tidying}
+
+# rename spaced variable names
+lookup <- c(OFFICE = "OFFICE NAME",
+            CANDIDATE = "CANDIDATE NAME",
+            COUNTY = "COUNTY NAME",
+            TOTAL_VOTES = "TOTAL VOTES PER OFFICE PER COUNTY")
+prez2024 <- rename(prez2024, all_of(lookup)) 
+
+
+# remove comma from any vote tallies
+prez2024 <- prez2024 %>% 
+  mutate(TOTAL_VOTES = as.numeric(gsub(",", "", TOTAL_VOTES)))
+
+# pivot county totals wider
+pivot_prez <- prez2024 %>%
+  pivot_wider(
+    id_cols = COUNTY,
+    names_from = CANDIDATE,
+    values_from = TOTAL_VOTES,
+    values_fill = list(TOTAL_VOTES = 0)
+    ) %>%
+  mutate(TOTAL = rowSums(across(-COUNTY))) # total by county votes
+
+
+```
+
