@@ -7,6 +7,7 @@ output: html_document
 
 library(tidyverse)
 library(readxl)
+library(sf)
 
 options(digits=2)
 options(scipen = 999)
@@ -52,7 +53,7 @@ prez2024wider <- prez2024 %>%
     values_fill = list(TOTAL_VOTES = 0)
     ) %>%
   mutate(TotalVOTES = rowSums(across(-COUNTY))) %>% # total by county votes
-  mutate(VoteSHARE = round((TotalVOTES / sum(TotalVOTES)), 3))
+  mutate(VoteSHARE = round((TotalVOTES / sum(TotalVOTES)), 5))
 
 
 ```
@@ -62,14 +63,41 @@ prez2024wider <- prez2024 %>%
 top15counties <- prez2024wider %>%
   arrange(desc(TotalVOTES)) %>%
   select(COUNTY, TotalVOTES, VoteSHARE) %>%
-  slice_max(VoteSHARE, n = 10) %>%
-  sum(VoteSHARE)
+  slice_max(VoteSHARE, n = 15)
 
 ```
 
+Fetched Texas County Boundaries from [Texas Department of Transportation](https://gis-txdot.opendata.arcgis.com/datasets/texas-county-boundaries/explore?location=28.324243%2C-96.928342%2C5.62)
+
+This dataset was created by TxDOT for internal purposes. TxDOT is not the authority for county boundary data for the state. These features were digitized by TxDOT from georeferenced USGS topo maps to enable the classification of roadway attributes for the purposes of satisfying federal and state reporting requirements, and to serve as a base layer for TxDOT's cartographic products. 
+
+
 ```{r texas gis data}
 
-sf <- shapefile(filename = "data/gis/counties/Texas_County_Boundaries_4845315375211121464")
+# load county shapefiles
+sf <- st_read("data/gis/counties/Texas_County_Boundaries_4845315375211121464/County_Boundaries.shp")
+
+countyVoteShareSF <- sf %>%
+  mutate(CNTY_NM = toupper(CNTY_NM)) %>%
+  left_join(prez2024wider, join_by(CNTY_NM == COUNTY)) %>%
+  rename(COUNTY = "CNTY_NM") %>%
+  mutate(Top15 = ifelse(COUNTY %in% top15counties$COUNTY, "Top 15", "Other")) %>%
+  select(GID, COUNTY, TotalVOTES, VoteSHARE, Top15, geometry)
+
+```
+
+
+```{r}
+
+# county vote share
+ggplot(countyVoteShareSF) +
+  geom_sf(aes(fill = VoteSHARE), color = "white", size = 0.2) +
+  scale_fill_viridis_c(option = "plasma", name = "Vote Share (%)") +
+  theme_minimal()
+
+ggplot(countyVoteShareSF) +
+  geom_sf(aes(fill = COUNTY), size = 0.2)
+  theme_minimal()
 
 
 ```
