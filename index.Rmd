@@ -118,9 +118,42 @@ grid.arrange(map2, map1, ncol=2,
              bottom = "Source: Texas Secretary of State")
 
 ```
+```{r historical election data}
 
+# load 1964 Texas presidential election data
+election1964 <- read_csv("data/elections/County_Presidential_Election_Data_1964_0_0_2.csv") 
+
+# select key variables
+election1964 <- election1964 %>%
+  filter(grepl("^48", FIPS)) %>%                 
+  mutate(COUNTY = toupper(`Geographic Name`)) %>%
+  select(FIPS, COUNTY, `Total Vote`, `Lyndon Johnson`, `Barry Goldwater`) 
+
+# rename with party distinctions
+election1964 <- election1964 %>%
+  rename(c(DEMOCRATIC_1964 = `Lyndon Johnson`, REPUBLICAN_1964 = `Barry Goldwater`, TotalVOTES_1964 = `Total Vote`))
+  
+# prep for join with current election data, including changing data to doubles
+election1964 <- election1964 %>%
+  mutate(TotalVOTES_1964 = as.numeric(TotalVOTES_1964),
+         DEMOCRATIC_1964 = as.numeric(DEMOCRATIC_1964),
+         REPUBLICAN_1964 = as.numeric(REPUBLICAN_1964)) %>%
+  mutate(VoteSHARE_1964 = round((TotalVOTES_1964 / sum(TotalVOTES_1964)), 5))
+
+# rename 2024 election data with party distinctions
+election2024 <- prez2024wider %>%
+  select(COUNTY, TotalVOTES, `KAMALA D. HARRIS/TIM WALZ`, `DONALD J. TRUMP/JD VANCE`, VoteSHARE) %>%
+  rename(c(TotalVOTES_2024 = TotalVOTES, DEMOCRATIC_2024 = `KAMALA D. HARRIS/TIM WALZ`, 
+           REPUBLICAN_2024 = `DONALD J. TRUMP/JD VANCE`, VoteSHARE_2024 = VoteSHARE))
+
+# join 1964 and 2024 voter data
+electionDiff <- election1964 %>%
+  left_join(election2024, join_by(COUNTY))
+
+# pull county GIS data and join with voter data
+electionDiffSF <- countyVoteShareSF %>%
+  select(COUNTY, geometry, Top15) %>%
+  left_join(electionDiff, join_by(COUNTY))
 
 ```
-
-
 
