@@ -8,6 +8,7 @@ output: html_document
 library(tidyverse)
 library(readxl)
 library(sf)
+library(gridExtra)
 
 options(digits=2)
 options(scipen = 999)
@@ -21,7 +22,7 @@ Texas Secretary of State publishes county by county election results at [results
 
 ```{r load Texas Election Results 2024}
 
-df <- read_excel("data/CountybyCountyCanvassReport.xlsx")
+df <- read_excel("data/elections/CountybyCountyCanvassReport.xlsx")
 
 prez2024 <- df %>%
   select(-`ELECTION DATE-NAME`) %>%
@@ -95,9 +96,28 @@ ggplot(countyVoteShareSF) +
   scale_fill_viridis_c(option = "plasma", name = "Vote Share (%)") +
   theme_minimal()
 
-ggplot(countyVoteShareSF) +
-  geom_sf(aes(fill = COUNTY), size = 0.2)
-  theme_minimal()
+# map of top 15 counties by vote share
+map1 <- ggplot(countyVoteShareSF) +
+  geom_sf(aes(fill = Top15), color = "white", size = 0.2) +
+  coord_sf(datum = NA) + # remove grid lines
+  scale_fill_manual(values = c("Top 15" = "#AD2FFF", "Other" = "grey90")) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+# map of all other counties by vote share
+map2 <- ggplot(countyVoteShareSF) +
+  geom_sf(aes(fill = Top15), color = "white", size = 0.2) +
+  coord_sf(datum = NA) +
+  scale_fill_manual(values = c("Top 15" = "grey90", "Other" = "#158100")) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+# arrange maps together
+grid.arrange(map2, map1, ncol=2,
+             top = "Electoral Distribution In Texas",
+             bottom = "Source: Texas Secretary of State")
+
+```
 
 
 ```
