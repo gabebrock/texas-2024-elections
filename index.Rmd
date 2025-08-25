@@ -186,6 +186,30 @@ ggplot() +
   coord_sf(datum = NA) + # remove gridlines
   theme_minimal() +
   theme(legend.position = "right")
+
+# plot total (vote share) difference
+ggplot() +
+  # base map
+  geom_sf(data = electionDiffSF, fill = "grey90", color = "grey50", size = 0.2) +
+  geom_sf(data = electionDiffSF, aes(fill = Top15)) +
+  scale_fill_manual(values = c("Top 15" = "#AD2FFF", "Other" = "grey90")) +
+  # 1964 bubbles (solid circles)
+  geom_point(data = county_centroids,
+             aes(x = lon, y = lat, size = VoteSHARE_1964),
+             shape = 16, color = "black", stroke = 1, alpha = 0.5) +
+  # 2024 bubbles (rings)
+  geom_point(data = county_centroids,
+             aes(x = lon, y = lat, size = VoteSHARE_2024, stroke = .5),
+             shape = 1, color = "black", alpha = 0.6) +
+  # shared size scale
+  scale_size(range = c(0.4, 9), 
+             breaks = c(0.005, 0.01, 0.05, 0.10), 
+             labels = c("0.05%", "1%", "5%", "10%"),
+             name = "TOTAL VOTES CAST") +
+  coord_sf(datum = NA) +
+  theme_minimal() +
+  theme(legend.position = "right")
+
 ```
 
 
