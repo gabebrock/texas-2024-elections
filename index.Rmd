@@ -214,5 +214,30 @@ ggplot() +
   theme(legend.position = "right")
 
 ```
+```{r}
+
+# list layers in census geodatabase
+st_layers("data/gis/census_tracts_2020/JoinedData.gdb")
+
+censusTracts2020 <- st_read("data/gis/census_tracts_2020/JoinedData.gdb",
+                              layer = "Tracts")
+
+censusTracts2020SF <- censusTracts2020 %>%
+  filter(State_Name == "Texas") %>%
+  select(GEOID, NAME, County_Name, 
+         P0010001, # Total population Total
+         P0010003, # White alone
+         P0010004, # Black or African American alone
+         P0020002, # Hispanic or Latino
+         P0020003, # Not Hispanic or Latino
+         H0010001, # Housing Units total
+         P0050001) # Population in group quarters total
+
+censusTracts2020SF <- censusTracts2020SF %>%
+  rename(COUNTY = County_Name)
+
+```
+
+# Census Fields and Descriptions
 
 
