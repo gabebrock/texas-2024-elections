@@ -205,9 +205,9 @@ ggplot() +
              aes(x = lon, y = lat, size = VoteSHARE_2024, stroke = .5),
              shape = 1, color = "black", alpha = 0.6) +
   # shared size scale
-  scale_size(range = c(0.4, 9), 
-             breaks = c(0.005, 0.01, 0.05, 0.10), 
-             labels = c("0.05%", "1%", "5%", "10%"),
+  scale_size(range = c(0.4, 10), 
+             breaks = c(0.001, 0.005, 0.01, 0.05, 0.10), 
+             labels = c("0.01%", "0.05%", "1%", "5%", "10%"),
              name = "TOTAL VOTES CAST") +
   coord_sf(datum = NA) +
   theme_minimal() +
