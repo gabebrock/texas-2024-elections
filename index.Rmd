@@ -91,26 +91,27 @@ countyVoteShareSF <- sf %>%
 ```{r}
 
 # county vote share
-ggplot(countyVoteShareSF) +
+map0 <- ggplot(countyVoteShareSF) +
   geom_sf(aes(fill = VoteSHARE), color = "white", size = 0.2) +
   scale_fill_viridis_c(option = "plasma", name = "Vote Share (%)") +
-  theme_minimal()
+  theme_minimal() +
+  theme_void()
 
 # map of top 15 counties by vote share
 map1 <- ggplot(countyVoteShareSF) +
   geom_sf(aes(fill = Top15), color = "white", size = 0.2) +
-  coord_sf(datum = NA) + # remove grid lines
   scale_fill_manual(values = c("Top 15" = "#AD2FFF", "Other" = "grey90")) +
   theme_minimal() +
-  theme(legend.position = "bottom")
+  theme(legend.position = "none") +
+  coord_sf(datum = NA)
 
 # map of all other counties by vote share
 map2 <- ggplot(countyVoteShareSF) +
   geom_sf(aes(fill = Top15), color = "white", size = 0.2) +
-  coord_sf(datum = NA) +
   scale_fill_manual(values = c("Top 15" = "grey90", "Other" = "#158100")) +
   theme_minimal() +
-  theme(legend.position = "bottom")
+  theme(legend.position = "none") +
+  coord_sf(datum = NA)
 
 # arrange maps together
 grid.arrange(map2, map1, ncol=2,
@@ -118,6 +119,8 @@ grid.arrange(map2, map1, ncol=2,
              bottom = "Source: Texas Secretary of State")
 
 ```
+
+
 ```{r historical election data}
 
 # load 1964 Texas presidential election data
