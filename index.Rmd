@@ -254,3 +254,28 @@ P0020001	                      P2	    Total population	Total
 P0020002	                      P2	    Total population	Hispanic or Latino
 P0020003	                      P2	    Total population	Not Hispanic or Latino
 
+```{r}
+
+library(dots)
+
+harris_county_shp <- censusTracts2020SF %>%
+  filter(COUNTY == "Harris County")
+
+dots::dots_points(shp = harris_county_shp, cols = c(P0020002, P0010003, P0010004), divisor = 15)  %>% 
+  dplyr::mutate(dots_type = dplyr::case_when(
+    dots_type == 'P0010003' ~ 'White',
+    dots_type == 'P0020002' ~ 'Hispanic',
+    dots_type == 'P0010004' ~ 'Black'
+  )) %>% 
+  ggplot() +
+  geom_sf(data = harris_county_shp, fill = NA, color = 'black') + 
+  geom_sf(aes(color = dots_type), size = 0.05, alpha = 0.6) +
+  scale_color_brewer(name = 'Race/Ethnicity', palette = 'Accent') + 
+  labs(
+    title = 'White and Hispanic Adults in Harris County, TX',
+    caption = 'One point per 500 adults.'
+  ) + 
+  theme_void()
+
+```
+
