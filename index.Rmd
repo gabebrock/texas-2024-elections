@@ -240,4 +240,17 @@ censusTracts2020SF <- censusTracts2020SF %>%
 
 # Census Fields and Descriptions
 
+**List of the fields and descriptions found in the [PL 94-171 dataset](https://redistrictingdatahub.org/data/about-our-data/pl-94171-dataset/fields-and-descriptions/)**
+
+## P1. Race
+Data dictionary reference name  Table   Universe	        Table number and contents
+P0010001	                      P1	    Total population	Total
+P0010003	                      P1	    Total population	White alone
+P0010004	                      P1	    Total population	Black or African American alone
+
+## P2. Hispanic or Latino, and not Hispanic or Latino by Race
+Data dictionary reference name  Table   Universe	        Table number and contents
+P0020001	                      P2	    Total population	Total
+P0020002	                      P2	    Total population	Hispanic or Latino
+P0020003	                      P2	    Total population	Not Hispanic or Latino
 
