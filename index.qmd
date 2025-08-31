@@ -188,7 +188,8 @@ ggplot() +
              name = "TOTAL VOTES CAST") +
   coord_sf(datum = NA) + # remove gridlines
   theme_minimal() +
-  theme(legend.position = "right")
+  theme(legend.position = "right",
+        axis.text = element_blank())
 
 # plot total (vote share) difference
 ggplot() +
@@ -211,9 +212,11 @@ ggplot() +
              name = "TOTAL VOTES CAST") +
   coord_sf(datum = NA) +
   theme_minimal() +
-  theme(legend.position = "right")
+  theme(legend.position = "right",
+        axis.text = element_blank())
 
 ```
+
 ```{r}
 
 # list layers in census geodatabase
@@ -230,11 +233,21 @@ censusTracts2020SF <- censusTracts2020 %>%
          P0010004, # Black or African American alone
          P0020002, # Hispanic or Latino
          P0020003, # Not Hispanic or Latino
+         P0020005, # White (Non-Hispanic/Latino)
+         P0020006, # Black (Non-Hispanic/Latino)
          H0010001, # Housing Units total
          P0050001) # Population in group quarters total
 
+# rename COUNTY variable name and remove 'county' from all listings to match other datasets
 censusTracts2020SF <- censusTracts2020SF %>%
   rename(COUNTY = County_Name)
+
+censusTracts2020SF <- censusTracts2020SF %>%
+  mutate(COUNTY = toupper(sub(" County", "", COUNTY)))
+
+# create new race variable, all non-white persons in a county
+censusTracts2020SF <- censusTracts2020SF %>%
+  mutate(P1NonWhite = (P0010001 - P0010003))
 
 ```
 
@@ -259,20 +272,19 @@ P0020003	                      P2	    Total population	Not Hispanic or Latino
 library(dots)
 
 harris_county_shp <- censusTracts2020SF %>%
-  filter(COUNTY == "Harris County")
+  filter(COUNTY == "HARRIS")
 
-dots::dots_points(shp = harris_county_shp, cols = c(P0020002, P0010003, P0010004), divisor = 15)  %>% 
+map4 <- dots::dots_points(shp = harris_county_shp, cols = c(P0020005, P1NonWhite), divisor = 100)  %>% 
   dplyr::mutate(dots_type = dplyr::case_when(
-    dots_type == 'P0010003' ~ 'White',
-    dots_type == 'P0020002' ~ 'Hispanic',
-    dots_type == 'P0010004' ~ 'Black'
+    dots_type == 'P0020005' ~ 'White (Non-Hispanic)',
+    dots_type == 'P1NonWhite' ~ 'Non-White'
   )) %>% 
   ggplot() +
   geom_sf(data = harris_county_shp, fill = NA, color = 'black') + 
-  geom_sf(aes(color = dots_type), size = 0.05, alpha = 0.6) +
+  geom_sf(aes(color = dots_type), size = 0.2, alpha = 0.6) +
   scale_color_brewer(name = 'Race/Ethnicity', palette = 'Accent') + 
   labs(
-    title = 'White and Hispanic Adults in Harris County, TX',
+    title = 'White (Non-Hispanic) and Non-White Adults in Harris County, TX',
     caption = 'One point per 500 adults.'
   ) + 
   theme_void()
