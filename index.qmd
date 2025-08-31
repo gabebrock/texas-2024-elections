@@ -9,6 +9,7 @@ library(tidyverse)
 library(readxl)
 library(sf)
 library(gridExtra)
+library(grid)
 
 options(digits=2)
 options(scipen = 999)
@@ -116,7 +117,13 @@ map2 <- ggplot(countyVoteShareSF) +
 # arrange maps together
 grid.arrange(map2, map1, ncol=2,
              top = "Electoral Distribution In Texas",
-             bottom = "Source: Texas Secretary of State")
+             bottom = textGrob(
+                "Source: Texas Secretary of State",
+                gp = gpar(fontface = "italic", fontsize = 9),
+                hjust = 1,
+                x = 1
+              )
+            )
 
 ```
 
@@ -216,13 +223,28 @@ ggplot() +
         axis.text = element_blank())
 
 ```
+# Census Fields and Descriptions
+
+**List of the fields and descriptions found in the [PL 94-171 dataset](https://redistrictingdatahub.org/data/about-our-data/pl-94171-dataset/fields-and-descriptions/)**
+
+## P1. Race
+Data dictionary reference name  Table   Universe	        Table number and contents
+P0010001	                      P1	    Total population	Total
+P0010003	                      P1	    Total population	White alone
+P0010004	                      P1	    Total population	Black or African American alone
+
+## P2. Hispanic or Latino, and not Hispanic or Latino by Race
+Data dictionary reference name  Table   Universe	        Table number and contents
+P0020001	                      P2	    Total population	Total
+P0020002	                      P2	    Total population	Hispanic or Latino
+P0020003	                      P2	    Total population	Not Hispanic or Latino
 
 ```{r}
 
 # list layers in census geodatabase
-st_layers("data/gis/census_tracts_2020/JoinedData.gdb")
+st_layers("data/census/census_tracts_2020/JoinedData.gdb")
 
-censusTracts2020 <- st_read("data/gis/census_tracts_2020/JoinedData.gdb",
+censusTracts2020 <- st_read("data/census/census_tracts_2020/JoinedData.gdb",
                               layer = "Tracts")
 
 censusTracts2020SF <- censusTracts2020 %>%
@@ -251,21 +273,21 @@ censusTracts2020SF <- censusTracts2020SF %>%
 
 ```
 
-# Census Fields and Descriptions
+```{r}
 
-**List of the fields and descriptions found in the [PL 94-171 dataset](https://redistrictingdatahub.org/data/about-our-data/pl-94171-dataset/fields-and-descriptions/)**
+library(geojsonsf)
 
-## P1. Race
-Data dictionary reference name  Table   Universe	        Table number and contents
-P0010001	                      P1	    Total population	Total
-P0010003	                      P1	    Total population	White alone
-P0010004	                      P1	    Total population	Black or African American alone
+censusBlocks2020_texas_GeoJSON_url <- "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/Texas_Census_2020_Redistricting_Blocks/FeatureServer/0"
 
-## P2. Hispanic or Latino, and not Hispanic or Latino by Race
-Data dictionary reference name  Table   Universe	        Table number and contents
-P0020001	                      P2	    Total population	Total
-P0020002	                      P2	    Total population	Hispanic or Latino
-P0020003	                      P2	    Total population	Not Hispanic or Latino
+# Read the GeoJSON from the URL and convert to an sf object
+censusBlocks2020SF_tx <- geojson_sf(censusBlocks2020_texas_GeoJSON_url)
+
+    # You now have an sf object representing the geospatial data from the GeoJSON URL
+    print(sf_object)
+
+
+```
+
 
 ```{r}
 
